@@ -1,0 +1,100 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+struct Edge {
+    int to;
+    int weight;
+};
+struct MSTNode {
+    int weight;
+    int node;
+    int parent;
+    bool operator>(const MSTNode& other) const {
+        return weight > other.weight;
+    }
+};
+
+void primsMST(int V, const vector<vector<Edge>>& adj) {
+    priority_queue<MSTNode, vector<MSTNode>, greater<MSTNode>> pq;   
+    vector<bool> inMST(V, false);
+    vector<pair<int, int>> mstEdges;
+    int totalMSTWeight = 0;
+    pq.push({0, 0, -1});
+    while (!pq.empty()) {
+        MSTNode current = pq.top();
+        pq.pop();
+        int u = current.node;
+        int weight = current.weight;
+        int parent = current.parent;
+        if (inMST[u]) continue;
+        inMST[u] = true;
+        totalMSTWeight += weight;
+        if (parent != -1) {
+            mstEdges.push_back({parent, u});
+        }
+        for (const auto& edge : adj[u]) {
+            int v = edge.to;
+            int w = edge.weight;
+            if (!inMST[v]) {
+                pq.push({w, v, u});
+            }
+        }
+    }
+    cout << "\n--- Minimum Spanning Tree Edges ---" << endl;
+    cout << "Edge \tWeight" << endl;
+    for (const auto& edge : mstEdges) {
+        int w = 0;
+        for (const auto& adjEdge : adj[edge.first]) {
+            if (adjEdge.to == edge.second) {
+                w = adjEdge.weight;
+                break;
+            }
+        }
+        cout << edge.first << " - " << edge.second << " \t" << w << endl;
+    }
+    cout << "\nTotal Weight of Minimum Spanning Tree: " << totalMSTWeight << endl;
+}
+
+int main() {
+    int V, E;
+    cout << "Enter the number of vertices (V): ";
+    cin >> V;
+    cout << "Enter the number of edges (E): ";
+    cin >> E;
+    vector<vector<Edge>> adj(V);
+    cout << "\nEnter edges in the format (Source Destination Weight):" << endl;
+    cout << "Note: Vertices are indexed from 0 to " << V - 1 << endl; 
+    for (int i = 0; i < E; ++i) {
+        int u, v, w;
+        cout << "Edge " << i + 1 << ": ";
+        cin >> u >> v >> w;        
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    primsMST(V, adj);
+    return 0;
+}
+Output:
+Enter the number of vertices (V): 5
+Enter the number of edges (E): 7
+
+Enter edges in the format (Source Destination Weight):
+Note: Vertices are indexed from 0 to 4
+Edge 1: 0 1 2
+Edge 2: 0 3 6
+Edge 3: 1 2 3
+Edge 4: 1 3 8
+Edge 5: 1 4 5
+Edge 6: 2 4 7
+Edge 7: 3 4 9
+
+--- Minimum Spanning Tree Edges ---
+Edge 	Weight
+0 - 1 	2
+1 - 2 	3
+1 - 4 	5
+0 - 3 	6
+
+Total Weight of Minimum Spanning Tree: 16
